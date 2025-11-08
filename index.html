@@ -40,6 +40,22 @@
             font-size: 1.2rem;
             opacity: 0.9;
         }
+        
+        .header button {
+            color: white;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .header button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
 
         .post-form {
             background: white;
@@ -546,6 +562,17 @@
         <header class="header">
             <h1>💕 校园表白墙</h1>
             <p>勇敢表达你的心意，让爱传递整个校园</p>
+            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button id="historyBtn" style="color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; border: none; cursor: pointer;">
+                    📜 历史消息
+                </button>
+                <button id="refreshBtn" style="color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; border: none; cursor: pointer;">
+                    🔄 刷新表白
+                </button>
+                <a href="../管理员后台/index.html" target="_blank" style="color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px;">
+                    🔐 管理员后台
+                </a>
+            </div>
         </header>
 
         <div class="post-form">
@@ -643,6 +670,34 @@
             init() {
                 this.bindEvents();
                 this.renderWall();
+                
+                // 添加调试信息
+                console.log('初始化表白墙，当前表白数量:', this.confessions.length);
+                
+                // 检查本地存储
+                this.debugLocalStorage();
+            }
+            
+            // 调试本地存储
+            debugLocalStorage() {
+                const storageKeys = Object.keys(localStorage);
+                console.log('本地存储中的键:', storageKeys);
+                
+                // 检查每个可能的数据键
+                const possibleKeys = ['confessions', 'frontend_confessions', 'user_confessions'];
+                possibleKeys.forEach(key => {
+                    const data = localStorage.getItem(key);
+                    if (data) {
+                        try {
+                            const parsed = JSON.parse(data);
+                            console.log(`键 "${key}" 包含 ${parsed.length} 条表白`);
+                        } catch (e) {
+                            console.error(`解析键 "${key}" 失败:`, e);
+                        }
+                    } else {
+                        console.log(`键 "${key}" 为空`);
+                    }
+                });
             }
 
             // 绑定事件
@@ -665,6 +720,16 @@
                 
                 // 媒体相册事件
                 this.setupMediaGallery();
+                
+                // 刷新按钮事件
+                document.getElementById('refreshBtn').addEventListener('click', () => {
+                    this.refreshConfessions();
+                });
+                
+                // 历史按钮事件
+                document.getElementById('historyBtn').addEventListener('click', () => {
+                    this.showHistory();
+                });
             }
 
             // 设置媒体相册功能
@@ -1112,7 +1177,25 @@
                     : this.confessions.filter(confession => confession.type === this.currentFilter);
                 
                 if (filteredConfessions.length === 0) {
-                    wall.innerHTML = '<div class="empty-wall">暂无表白，快来做第一个发布者吧！</div>';
+                    // 检查是否有任何数据
+                    if (this.confessions.length === 0) {
+                        wall.innerHTML = `
+                            <div class="empty-wall">
+                                <div style="margin-bottom: 20px;">暂无表白，快来做第一个发布者吧！</div>
+                                <button onclick="confessionWall.tryRecoverData()" style="background: #ff9a9e; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
+                                    尝试恢复数据
+                                </button>
+                                <button onclick="confessionWall.clearAllData()" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                                    清空所有数据
+                                </button>
+                                <div style="margin-top: 15px; font-size: 14px; color: #888;">
+                                    如果您之前有数据但现在看不见，可能是数据存储问题。请尝试恢复数据或检查浏览器控制台。
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        wall.innerHTML = '<div class="empty-wall">当前分类下暂无表白</div>';
+                    }
                     return;
                 }
                 
@@ -1122,6 +1205,84 @@
                     const card = this.createConfessionCard(confession);
                     wall.appendChild(card);
                 });
+            }
+            
+            // 尝试恢复数据
+            tryRecoverData() {
+                console.log('尝试恢复数据...');
+                
+                // 尝试从所有可能的localStorage键恢复数据
+                const allKeys = Object.keys(localStorage);
+                const dataKeys = allKeys.filter(key => 
+                    key.includes('confession') || key.includes('message')
+                );
+                
+                console.log('找到的数据键:', dataKeys);
+                
+                let recoveredData = [];
+                
+                dataKeys.forEach(key => {
+                    try {
+                        const data = localStorage.getItem(key);
+                        if (data) {
+                            const parsed = JSON.parse(data);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                console.log(`从 ${key} 恢复 ${parsed.length} 条数据`);
+                                recoveredData = recoveredData.concat(parsed);
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`恢复 ${key} 失败:`, e);
+                    }
+                });
+                
+                if (recoveredData.length > 0) {
+                    // 去重（基于ID）
+                    const uniqueData = [];
+                    const seenIds = new Set();
+                    
+                    recoveredData.forEach(item => {
+                        if (!seenIds.has(item.id)) {
+                            seenIds.add(item.id);
+                            uniqueData.push(item);
+                        }
+                    });
+                    
+                    // 按时间排序（最新的在前）
+                    uniqueData.sort((a, b) => {
+                        const timeA = new Date(a.timestamp || 0).getTime();
+                        const timeB = new Date(b.timestamp || 0).getTime();
+                        return timeB - timeA;
+                    });
+                    
+                    this.confessions = uniqueData;
+                    this.saveConfessions();
+                    this.renderWall();
+                    
+                    alert(`成功恢复 ${uniqueData.length} 条表白数据！`);
+                } else {
+                    alert('未找到可恢复的数据，可能数据已永久丢失。');
+                }
+            }
+            
+            // 清空所有数据
+            clearAllData() {
+                if (confirm('确定要清空所有数据吗？此操作不可恢复！')) {
+                    // 清空所有可能的数据键
+                    const allKeys = Object.keys(localStorage);
+                    const dataKeys = allKeys.filter(key => 
+                        key.includes('confession') || key.includes('message')
+                    );
+                    
+                    dataKeys.forEach(key => {
+                        localStorage.removeItem(key);
+                    });
+                    
+                    this.confessions = [];
+                    this.renderWall();
+                    
+                    alert('所有数据已清空！');
+                }
             }
 
             // 创建表白卡片
@@ -1207,15 +1368,93 @@
 
             // 保存表白到本地存储
             saveConfessions() {
-                localStorage.setItem('confessions', JSON.stringify(this.confessions));
+                // 同时保存到多个键，确保兼容性
+                const data = JSON.stringify(this.confessions);
+                localStorage.setItem('confessions', data);
+                localStorage.setItem('frontend_confessions', data);
+                localStorage.setItem('user_confessions', data);
+                
+                // 添加调试日志
+                console.log(`保存了 ${this.confessions.length} 条表白到本地存储`);
             }
 
             // 从本地存储加载表白
             loadConfessions() {
-                const savedConfessions = localStorage.getItem('confessions');
-                return savedConfessions ? JSON.parse(savedConfessions) : [];
+                // 尝试从多个可能的键加载表白数据
+                let savedConfessions = null;
+                const possibleKeys = ['confessions', 'frontend_confessions', 'user_confessions'];
+                
+                for (const key of possibleKeys) {
+                    const data = localStorage.getItem(key);
+                    if (data) {
+                        try {
+                            savedConfessions = JSON.parse(data);
+                            if (savedConfessions && savedConfessions.length > 0) {
+                                console.log(`从 ${key} 加载到 ${savedConfessions.length} 条表白`);
+                                break;
+                            }
+                        } catch (e) {
+                            console.error(`解析 ${key} 失败:`, e);
+                        }
+                    }
+                }
+                
+                return savedConfessions || [];
             }
 
+            // 刷新表白数据
+            refreshConfessions() {
+                console.log('手动刷新表白数据...');
+                
+                // 重新加载数据
+                this.confessions = this.loadConfessions();
+                console.log('刷新后表白数量:', this.confessions.length);
+                
+                // 重新渲染
+                this.renderWall();
+                
+                // 显示提示
+                this.showSuccessMessage('数据已刷新！');
+            }
+            
+            // 显示历史记录
+            showHistory() {
+                const historyCount = this.confessions.length;
+                if (historyCount === 0) {
+                    alert('暂无历史表白记录');
+                    return;
+                }
+                
+                // 创建一个简单的历史记录显示
+                const historyWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+                historyWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>表白历史记录</title>
+                        <style>
+                            body { font-family: 'Microsoft YaHei', sans-serif; margin: 20px; }
+                            h1 { color: #667eea; }
+                            .confession { border-bottom: 1px solid #eee; padding: 15px 0; }
+                            .confession-header { font-weight: bold; color: #333; }
+                            .confession-content { margin: 10px 0; line-height: 1.6; }
+                            .confession-footer { color: #888; font-size: 14px; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>表白历史记录 (${historyCount}条)</h1>
+                        ${this.confessions.map(c => `
+                            <div class="confession">
+                                <div class="confession-header">致: ${c.to} —— 来自: ${c.from}</div>
+                                <div class="confession-content">${c.content}</div>
+                                <div class="confession-footer">时间: ${c.timestamp} | 类型: ${c.type}</div>
+                            </div>
+                        `).join('')}
+                    </body>
+                    </html>
+                `);
+                historyWindow.document.close();
+            }
+            
             // 加载历史消息
             loadHistoryMessages() {
                 const savedMessages = localStorage.getItem('historyMessages');
@@ -1224,8 +1463,10 @@
         }
 
         // 初始化表白墙
+        let confessionWall;
+        
         document.addEventListener('DOMContentLoaded', () => {
-            new ConfessionWall();
+            confessionWall = new ConfessionWall();
         });
     </script>
 </body>
