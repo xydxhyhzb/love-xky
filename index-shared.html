@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园表白墙 (共享版)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 头部样式 */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .header button {
+            color: white;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .header button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* 表单样式 */
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ff9a9e;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 文件上传样式 */
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: #ff9a9e;
+            background-color: rgba(255, 154, 158, 0.1);
+        }
+
+        .upload-area.dragover {
+            border-color: #ff9a9e;
+            background-color: rgba(255, 154, 158, 0.2);
+        }
+
+        .preview-container {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .preview-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .preview-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .preview-image {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .preview-video {
+            width: 120px;
+            height: 120px;
+            background: #000;
+            display: block;
+            object-fit: cover;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .video-loading {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .file-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 8px;
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .file-info span:first-child {
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-info span:last-child {
+            opacity: 0.8;
+            font-size: 10px;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        /* 表白墙样式 */
+        .wall-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .wall-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ff9a9e;
+        }
+
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #f1f1f1;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #ff9a9e;
+            color: white;
+        }
+
+        .wall {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .empty-wall {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            font-size: 18px;
+        }
+
+        /* 表白卡片样式 */
+        .confession-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .confession-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .card-to {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .card-type {
+            font-size: 24px;
+        }
+
+        .card-content {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .card-from {
+            text-align: right;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .card-time {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        /* 表白卡片中的媒体内容 */
+        .card-media {
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .card-media img,
+        .card-media video {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* 媒体可点击效果 */
+        .media-clickable {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .media-clickable:hover {
+            transform: scale(1.02);
+        }
+
+        /* 相册弹窗样式 */
+        .media-gallery {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .gallery-content {
+            width: 80%;
+            max-width: 900px;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gallery-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 30px;
+            color: white;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .gallery-media {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+        }
+
+        .gallery-info {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .gallery-controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 90%;
+        }
+
+        .gallery-btn {
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sync-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        .sync-status.online {
+            background: rgba(40, 167, 69, 0.7);
+        }
+
+        .sync-status.offline {
+            background: rgba(220, 53, 69, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .form-container,
+            .wall-container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .wall {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>💕 校园表白墙</h1>
+            <p>勇敢表达你的心意，让爱传递整个校园 (共享版)</p>
+            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button id="refreshBtn" style="color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; border: none; cursor: pointer;">
+                    🔄 刷新表白
+                </button>
+                <button id="syncBtn" style="color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; border: none; cursor: pointer;">
+                    🔄 同步数据
+                </button>
+                <button id="exportBtn" style="color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; border: none; cursor: pointer;">
+                    📥 导出数据
+                </button>
+                <button id="importBtn" style="color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; border: none; cursor: pointer;">
+                    📤 导入数据
+                </button>
+                <a href="index.html" style="color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px;">
+                    🔒 返回单机版
+                </a>
+            </div>
+        </header>
+
+        <div class="form-container">
+            <form id="confessionForm">
+                <div class="form-group">
+                    <label for="to">致：</label>
+                    <input type="text" id="to" placeholder="请输入接收人姓名" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="from">发送人：</label>
+                    <input type="text" id="from" placeholder="你的姓名（可留空）">
+                </div>
+                
+                <div class="form-group">
+                    <label for="content">表白内容：</label>
+                    <textarea id="content" placeholder="写下你想说的话..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>上传图片/视频：</label>
+                    <div id="uploadArea" class="upload-area">
+                        <div class="upload-text">
+                            <p>点击或拖拽文件到此处上传</p>
+                            <small>支持图片(JPG, PNG, GIF)和视频(MP4, WebM, AVI, MOV等)，最大50MB</small>
+                        </div>
+                        <input type="file" id="mediaInput" accept="image/*,video/*" multiple style="display: none;">
+                    </div>
+                    <div id="previewContainer" class="preview-container">
+                        <!-- 预览文件将在这里显示 -->
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="type">表白类型：</label>
+                    <select id="type">
+                        <option value="love">💘 爱情表白</option>
+                        <option value="friendship">🤝 友情表白</option>
+                        <option value="admiration">🌟 欣赏表白</option>
+                        <option value="thanks">🙏 感谢表白</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="submit-btn">发布表白</button>
+            </form>
+        </div>
+
+        <div class="wall-container">
+            <h2>表白墙</h2>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="love">💘 爱情</button>
+                <button class="filter-btn" data-filter="friendship">🤝 友情</button>
+                <button class="filter-btn" data-filter="admiration">🌟 欣赏</button>
+                <button class="filter-btn" data-filter="thanks">🙏 感谢</button>
+            </div>
+            <div id="wall" class="wall">
+                <div class="empty-wall">正在加载表白墙...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 媒体相册弹窗 -->
+    <div id="media-gallery" class="media-gallery">
+        <button class="gallery-close">&times;</button>
+        <div class="gallery-content">
+            <img id="gallery-image" class="gallery-media" style="display: none;">
+            <video id="gallery-video" class="gallery-media" controls style="display: none;"></video>
+            <div class="gallery-info">
+                <span id="gallery-title">文件名称</span>
+                <span id="gallery-index">1 / 1</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 同步状态指示器 -->
+    <div id="syncStatus" class="sync-status">
+        连接中...
+    </div>
+
+    <!-- 隐藏的文件输入 -->
+    <input type="file" id="importFileInput" accept=".json" style="display: none;">
+
+    <script>
+        class SharedConfessionWall {
+            constructor() {
+                this.confessions = [];
+                this.currentFilter = 'all';
+                this.selectedFiles = [];
+                this.gallery = {
+                    mediaList: [],
+                    currentIndex: 0
+                };
+                this.syncServerUrl = window.location.protocol + '//' + window.location.hostname + ':8002';
+                this.init();
+            }
+
+            // 初始化应用
+            init() {
+                this.bindEvents();
+                this.loadConfessions();
+                this.renderWall();
+                
+                // 设置定期同步
+                this.setupPeriodicSync();
+            }
+
+            // 设置定期同步
+            setupPeriodicSync() {
+                // 每30秒同步一次数据
+                setInterval(() => {
+                    this.loadConfessions();
+                }, 30000);
+                
+                // 每5秒检查连接状态
+                setInterval(() => {
+                    this.checkConnectionStatus();
+                }, 5000);
+            }
+
+            // 检查连接状态
+            checkConnectionStatus() {
+                const statusEl = document.getElementById('syncStatus');
+                
+                fetch(this.syncServerUrl + '/api/confessions')
+                    .then(response => {
+                        if (response.ok) {
+                            statusEl.textContent = '在线';
+                            statusEl.className = 'sync-status online';
+                        } else {
+                            statusEl.textContent = '离线';
+                            statusEl.className = 'sync-status offline';
+                        }
+                    })
+                    .catch(error => {
+                        statusEl.textContent = '离线';
+                        statusEl.className = 'sync-status offline';
+                    });
+            }
+
+            // 绑定事件
+            bindEvents() {
+                // 表单提交事件
+                document.getElementById('confessionForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.submitConfession();
+                });
+
+                // 过滤器按钮事件
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.setFilter(e.target.dataset.filter);
+                    });
+                });
+                
+                // 文件上传事件
+                this.setupFileUpload();
+                
+                // 媒体相册事件
+                this.setupMediaGallery();
+                
+                // 刷新按钮事件
+                document.getElementById('refreshBtn').addEventListener('click', () => {
+                    this.loadConfessions();
+                    this.renderWall();
+                });
+                
+                // 同步按钮事件
+                document.getElementById('syncBtn').addEventListener('click', () => {
+                    this.loadConfessions();
+                    this.renderWall();
+                    alert('数据同步完成！');
+                });
+                
+                // 导出按钮事件
+                document.getElementById('exportBtn').addEventListener('click', () => {
+                    this.exportData();
+                });
+                
+                // 导入按钮事件
+                document.getElementById('importBtn').addEventListener('click', () => {
+                    document.getElementById('importFileInput').click();
+                });
+                
+                // 导入文件选择事件
+                document.getElementById('importFileInput').addEventListener('change', (e) => {
+                    this.importData(e.target.files[0]);
+                });
+            }
+
+            // 设置文件上传
+            setupFileUpload() {
+                const uploadArea = document.getElementById('uploadArea');
+                const fileInput = document.getElementById('mediaInput');
+                const previewContainer = document.getElementById('previewContainer');
+
+                // 点击上传区域
+                uploadArea.addEventListener('click', () => {
+                    fileInput.click();
+                });
+
+                // 文件选择变化事件
+                fileInput.addEventListener('change', (e) => {
+                    this.handleFiles(e.target.files);
+                    fileInput.value = '';
+                });
+
+                // 拖拽事件
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.add('dragover');
+                });
+
+                uploadArea.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.remove('dragover');
+                });
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.remove('dragover');
+                    this.handleFiles(e.dataTransfer.files);
+                });
+
+                // 移除预览项事件委托
+                previewContainer.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('remove-btn')) {
+                        const fileName = e.target.dataset.file;
+                        this.removeFile(fileName);
+                    }
+                });
+            }
+
+            // 设置媒体相册功能
+            setupMediaGallery() {
+                const gallery = document.getElementById('media-gallery');
+                const closeBtn = gallery.querySelector('.gallery-close');
+
+                // 关闭相册
+                closeBtn.addEventListener('click', () => {
+                    this.closeMediaGallery();
+                });
+
+                // 点击背景关闭相册
+                gallery.addEventListener('click', (e) => {
+                    if (e.target === gallery) {
+                        this.closeMediaGallery();
+                    }
+                });
+
+                // ESC键关闭相册
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && gallery.style.display === 'flex') {
+                        this.closeMediaGallery();
+                    }
+                });
+            }
+
+            // 处理选择的文件
+            handleFiles(files) {
+                const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+
+                for (let file of files) {
+                    // 检查文件大小
+                    if (file.size > MAX_SIZE) {
+                        this.showErrorMessage(`文件"${file.name}"大小超过50MB限制`);
+                        continue;
+                    }
+
+                    // 检查文件类型
+                    if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+                        // 文件有效，添加到列表
+                        if (!this.selectedFiles.find(f => f.name === file.name)) {
+                            this.selectedFiles.push(file);
+                            this.addFilePreview(file);
+                        }
+                    } else {
+                        this.showErrorMessage(`不支持的文件类型: ${file.type}`);
+                        continue;
+                    }
+                }
+            }
+
+            // 添加文件预览
+            addFilePreview(file) {
+                const previewContainer = document.getElementById('previewContainer');
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                previewItem.dataset.file = file.name;
+
+                const fileURL = URL.createObjectURL(file);
+                
+                if (file.type.startsWith('image/')) {
+                    previewItem.innerHTML = `
+                        <img src="${fileURL}" alt="${file.name}" class="preview-image">
+                        <div class="file-info">
+                            <span>${file.name}</span>
+                            <span>${this.formatFileSize(file.size)}</span>
+                        </div>
+                        <button class="remove-btn" data-file="${file.name}">×</button>
+                    `;
+                } else if (file.type.startsWith('video/')) {
+                    previewItem.innerHTML = `
+                        <div class="video-wrapper">
+                            <video class="preview-video" preload="metadata" muted>
+                                您的浏览器不支持视频播放。
+                            </video>
+                            <div class="video-overlay">
+                                <div class="video-loading">加载中...</div>
+                            </div>
+                        </div>
+                        <div class="file-info">
+                            <span>${file.name}</span>
+                            <span>${this.formatFileSize(file.size)}</span>
+                        </div>
+                        <button class="remove-btn" data-file="${file.name}">×</button>
+                    `;
+                    
+                    const videoElement = previewItem.querySelector('video');
+                    const loadingOverlay = previewItem.querySelector('.video-loading');
+                    
+                    videoElement.src = fileURL;
+                    
+                    videoElement.addEventListener('loadeddata', () => {
+                        if (loadingOverlay) {
+                            loadingOverlay.textContent = '✅';
+                            setTimeout(() => {
+                                const overlay = previewItem.querySelector('.video-overlay');
+                                if (overlay) overlay.style.display = 'none';
+                            }, 1000);
+                        }
+                    });
+                }
+                
+                previewContainer.appendChild(previewItem);
+            }
+
+            // 移除文件
+            removeFile(fileName) {
+                this.selectedFiles = this.selectedFiles.filter(file => file.name !== fileName);
+                
+                // 移除对应的预览项
+                const previewItem = document.querySelector(`[data-file="${fileName}"]`);
+                if (previewItem) {
+                    previewItem.remove();
+                }
+            }
+
+            // 格式化文件大小
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            // 显示错误消息
+            showErrorMessage(message) {
+                alert(message);
+                console.error(message);
+            }
+
+            // 加载表白数据
+            loadConfessions() {
+                fetch(this.syncServerUrl + '/api/confessions')
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            throw new Error('加载数据失败');
+                        }
+                    })
+                    .then(data => {
+                        this.confessions = data;
+                        this.renderWall();
+                        console.log('成功加载表白数据:', data.length, '条');
+                    })
+                    .catch(error => {
+                        console.error('加载表白数据失败:', error);
+                        const wall = document.getElementById('wall');
+                        wall.innerHTML = '<div class="empty-wall">加载失败，请检查网络连接或刷新页面重试</div>';
+                    });
+            }
+
+            // 提交表白
+            async submitConfession() {
+                const to = document.getElementById('to').value.trim();
+                const from = document.getElementById('from').value.trim() || '匿名';
+                const content = document.getElementById('content').value.trim();
+                const type = document.getElementById('type').value;
+
+                if (!to || !content) {
+                    alert('请填写接收人和表白内容！');
+                    return;
+                }
+
+                // 创建表白对象
+                const confession = {
+                    id: Date.now() + Math.random(),
+                    to,
+                    from,
+                    content,
+                    type,
+                    timestamp: new Date().toLocaleString('zh-CN'),
+                    likes: 0,
+                    media: []
+                };
+
+                // 处理文件
+                if (this.selectedFiles.length > 0) {
+                    for (const file of this.selectedFiles) {
+                        const dataUrl = await this.fileToDataURL(file);
+                        confession.media.push({
+                            name: file.name,
+                            type: file.type,
+                            size: file.size,
+                            data: dataUrl
+                        });
+                    }
+                }
+
+                // 提交到服务器
+                fetch(this.syncServerUrl + '/api/confessions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(confession)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('提交失败');
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        // 清空表单和预览
+                        document.getElementById('confessionForm').reset();
+                        document.getElementById('previewContainer').innerHTML = '';
+                        this.selectedFiles = [];
+
+                        // 显示成功消息
+                        this.showSuccessMessage();
+                        
+                        // 重新加载数据
+                        this.loadConfessions();
+                    } else {
+                        alert('发布失败: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('提交表白失败:', error);
+                    alert('发布失败，请重试');
+                });
+            }
+
+            // 将文件转换为DataURL
+            fileToDataURL(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // 显示成功消息
+            showSuccessMessage() {
+                const successMsg = document.createElement('div');
+                successMsg.textContent = '表白发布成功！';
+                successMsg.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(40, 167, 69, 0.9);
+                    color: white;
+                    padding: 20px 40px;
+                    border-radius: 10px;
+                    font-size: 18px;
+                    z-index: 1000;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+                `;
+                
+                document.body.appendChild(successMsg);
+                
+                setTimeout(() => {
+                    successMsg.style.opacity = '0';
+                    successMsg.style.transition = 'opacity 0.5s';
+                    setTimeout(() => {
+                        document.body.removeChild(successMsg);
+                    }, 500);
+                }, 2000);
+            }
+
+            // 设置过滤器
+            setFilter(filter) {
+                this.currentFilter = filter;
+                
+                // 更新按钮状态
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    if (btn.dataset.filter === filter) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                // 重新渲染表白墙
+                this.renderWall();
+            }
+
+            // 渲染表白墙
+            renderWall() {
+                const wall = document.getElementById('wall');
+                
+                // 过滤表白
+                const filteredConfessions = this.currentFilter === 'all' 
+                    ? this.confessions 
+                    : this.confessions.filter(confession => confession.type === this.currentFilter);
+                
+                if (filteredConfessions.length === 0) {
+                    wall.innerHTML = '<div class="empty-wall">暂无表白，快来做第一个发布者吧！</div>';
+                    return;
+                }
+                
+                wall.innerHTML = '';
+                
+                filteredConfessions.forEach(confession => {
+                    const card = this.createConfessionCard(confession);
+                    wall.appendChild(card);
+                });
+            }
+
+            // 创建表白卡片
+            createConfessionCard(confession) {
+                const card = document.createElement('div');
+                card.className = `confession-card ${confession.type}`;
+                
+                // 获取类型标签
+                const typeLabels = {
+                    love: '💘 爱情表白',
+                    friendship: '🤝 友情表白',
+                    admiration: '🌟 欣赏表白',
+                    thanks: '🙏 感谢表白'
+                };
+                
+                const typeIcons = {
+                    love: '💘',
+                    friendship: '🤝',
+                    admiration: '🌟',
+                    thanks: '🙏'
+                };
+                
+                // 创建媒体内容
+                let mediaHTML = '';
+                if (confession.media && confession.media.length > 0) {
+                    // 创建媒体预览网格
+                    let mediaGridHTML = '<div class="card-media">';
+                    
+                    confession.media.forEach((file, index) => {
+                        if (file.type.startsWith('image/')) {
+                            mediaGridHTML += `<img src="${file.data}" alt="${file.name}" class="media-clickable" data-index="${index}">`;
+                        } else if (file.type.startsWith('video/')) {
+                            mediaGridHTML += `<video src="${file.data}" class="media-clickable" data-index="${index}" onclick="event.preventDefault();"></video>`;
+                        }
+                    });
+                    
+                    mediaGridHTML += '</div>';
+                    mediaHTML = mediaGridHTML;
+                }
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-to">致 ${confession.to}</div>
+                        <div class="card-type">${typeIcons[confession.type]}</div>
+                    </div>
+                    <div class="card-content">
+                        <p>${confession.content}</p>
+                    </div>
+                    ${mediaHTML}
+                    <div class="card-from">—— ${confession.from}</div>
+                    <div class="card-time">${confession.timestamp}</div>
+                `;
+                
+                // 为媒体元素添加点击事件
+                if (confession.media && confession.media.length > 0) {
+                    card.querySelectorAll('.media-clickable').forEach((element, index) => {
+                        element.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.openMediaGallery(confession, index);
+                        });
+                    });
+                }
+                
+                return card;
+            }
+
+            // 打开媒体相册
+            openMediaGallery(confession, startIndex = 0) {
+                const gallery = document.getElementById('media-gallery');
+                const galleryImage = document.getElementById('gallery-image');
+                const galleryVideo = document.getElementById('gallery-video');
+                
+                // 收集所有媒体文件
+                this.gallery.mediaList = [];
+                
+                if (confession.media && confession.media.length > 0) {
+                    confession.media.forEach((file, index) => {
+                        this.gallery.mediaList.push({
+                            type: file.type,
+                            url: file.data,
+                            name: file.name,
+                            confession: confession
+                        });
+                    });
+                }
+                
+                if (this.gallery.mediaList.length === 0) {
+                    return;
+                }
+                
+                // 设置当前索引
+                this.gallery.currentIndex = Math.min(startIndex, this.gallery.mediaList.length - 1);
+                
+                // 显示相册
+                gallery.style.display = 'flex';
+                
+                // 显示当前媒体
+                this.showGalleryMedia();
+            }
+
+            // 显示相册中的媒体
+            showGalleryMedia() {
+                const galleryImage = document.getElementById('gallery-image');
+                const galleryVideo = document.getElementById('gallery-video');
+                const galleryTitle = document.getElementById('gallery-title');
+                const galleryIndex = document.getElementById('gallery-index');
+                
+                if (this.gallery.currentIndex < 0 || this.gallery.currentIndex >= this.gallery.mediaList.length) {
+                    return;
+                }
+                
+                const currentMedia = this.gallery.mediaList[this.gallery.currentIndex];
+                
+                // 更新信息
+                galleryTitle.textContent = currentMedia.name;
+                galleryIndex.textContent = `${this.gallery.currentIndex + 1} / ${this.gallery.mediaList.length}`;
+                
+                // 显示图片或视频
+                if (currentMedia.type.startsWith('image/')) {
+                    galleryImage.src = currentMedia.url;
+                    galleryImage.style.display = 'block';
+                    galleryVideo.style.display = 'none';
+                } else if (currentMedia.type.startsWith('video/')) {
+                    galleryVideo.src = currentMedia.url;
+                    galleryVideo.style.display = 'block';
+                    galleryImage.style.display = 'none';
+                }
+            }
+
+            // 关闭媒体相册
+            closeMediaGallery() {
+                const gallery = document.getElementById('media-gallery');
+                const galleryVideo = document.getElementById('gallery-video');
+                
+                gallery.style.display = 'none';
+                galleryVideo.pause(); // 暂停视频
+            }
+
+            // 导出数据
+            exportData() {
+                const dataStr = JSON.stringify(this.confessions, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = `confessions_${new Date().toISOString().slice(0,10)}.json`;
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.style.display = 'none';
+                document.body.appendChild(linkElement);
+                linkElement.click();
+                document.body.removeChild(linkElement);
+                
+                alert(`导出成功！共导出 ${this.confessions.length} 条表白`);
+            }
+
+            // 导入数据
+            importData(file) {
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (Array.isArray(data)) {
+                            data.forEach(confession => {
+                                // 提交每条表白到服务器
+                                fetch(this.syncServerUrl + '/api/confessions', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(confession)
+                                })
+                                .then(response => {
+                                    if (response.ok) {
+                                        return response.json();
+                                    } else {
+                                        throw new Error('提交失败');
+                                    }
+                                })
+                                .then(result => {
+                                    if (!result.success) {
+                                        console.error('导入表白失败:', result.message);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('导入表白失败:', error);
+                                });
+                            });
+                            
+                            // 重新加载数据
+                            this.loadConfessions();
+                            
+                            alert(`导入成功！共导入 ${data.length} 条表白`);
+                        } else {
+                            alert('文件格式错误，请选择有效的表白数据文件');
+                        }
+                    } catch (error) {
+                        alert('文件解析失败，请检查文件格式');
+                        console.error('解析文件失败:', error);
+                    }
+                };
+                
+                reader.readAsText(file);
+            }
+        }
+
+        // 初始化表白墙
+        let confessionWall;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            confessionWall = new SharedConfessionWall();
+        });
+    </script>
+</body>
+</html>
