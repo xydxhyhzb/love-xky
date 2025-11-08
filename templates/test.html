@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API测试页面</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">表白墙API测试页面</h1>
+        
+        <!-- API状态测试 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2>API状态测试</h2>
+            </div>
+            <div class="card-body">
+                <button id="testApiBtn" class="btn btn-primary">测试API连接</button>
+                <div id="apiResult" class="mt-3"></div>
+            </div>
+        </div>
+        
+        <!-- 添加表白测试 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2>添加表白测试</h2>
+            </div>
+            <div class="card-body">
+                <form id="testForm">
+                    <div class="mb-3">
+                        <label for="to" class="form-label">致</label>
+                        <input type="text" class="form-control" id="to" value="测试接收者">
+                    </div>
+                    <div class="mb-3">
+                        <label for="from" class="form-label">来自</label>
+                        <input type="text" class="form-control" id="from" value="测试发送者">
+                    </div>
+                    <div class="mb-3">
+                        <label for="content" class="form-label">内容</label>
+                        <textarea class="form-control" id="content">这是一条测试表白内容</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="type" class="form-label">类型</label>
+                        <select class="form-select" id="type">
+                            <option value="love">爱情表白</option>
+                            <option value="friendship">友情表白</option>
+                            <option value="admiration">欣赏表白</option>
+                            <option value="thanks">感谢表白</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">提交测试表白</button>
+                </form>
+                <div id="submitResult" class="mt-3"></div>
+            </div>
+        </div>
+        
+        <!-- 获取表白列表测试 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2>获取表白列表测试</h2>
+            </div>
+            <div class="card-body">
+                <button id="getConfessionsBtn" class="btn btn-info">获取表白列表</button>
+                <div id="listResult" class="mt-3"></div>
+            </div>
+        </div>
+        
+        <!-- 数据库测试 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2>数据库测试</h2>
+            </div>
+            <div class="card-body">
+                <button id="testDbBtn" class="btn btn-warning">测试数据库</button>
+                <div id="dbResult" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 测试API连接
+        document.getElementById('testApiBtn').addEventListener('click', function() {
+            fetch('/api/confessions')
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('API响应异常: ' + response.status);
+                    }
+                })
+                .then(data => {
+                    document.getElementById('apiResult').innerHTML = `
+                        <div class="alert alert-success">
+                            <strong>API连接成功！</strong><br>
+                            返回数据: ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    document.getElementById('apiResult').innerHTML = `
+                        <div class="alert alert-danger">
+                            <strong>API连接失败！</strong><br>
+                            错误信息: ${error.message}
+                        </div>
+                    `;
+                });
+        });
+        
+        // 提交测试表白
+        document.getElementById('testForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const data = {
+                to: document.getElementById('to').value,
+                from: document.getElementById('from').value,
+                content: document.getElementById('content').value,
+                type: document.getElementById('type').value
+            };
+            
+            fetch('/api/confessions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('提交失败: ' + response.status);
+                }
+            })
+            .then(data => {
+                document.getElementById('submitResult').innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>表白提交成功！</strong><br>
+                        返回数据: ${JSON.stringify(data, null, 2)}
+                    </div>
+                `;
+            })
+            .catch(error => {
+                document.getElementById('submitResult').innerHTML = `
+                    <div class="alert alert-danger">
+                        <strong>表白提交失败！</strong><br>
+                        错误信息: ${error.message}
+                    </div>
+                `;
+            });
+        });
+        
+        // 获取表白列表
+        document.getElementById('getConfessionsBtn').addEventListener('click', function() {
+            fetch('/api/confessions')
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('获取失败: ' + response.status);
+                    }
+                })
+                .then(data => {
+                    let listHtml = `
+                        <div class="alert alert-success">
+                            <strong>表白列表获取成功！</strong><br>
+                            总共 ${data.total} 条表白，共 ${data.pages} 页
+                        </div>
+                    `;
+                    
+                    if (data.confessions && data.confessions.length > 0) {
+                        listHtml += '<div class="row">';
+                        data.confessions.forEach(confession => {
+                            listHtml += `
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6>致: ${confession.to}</h6>
+                                            <h6>来自: ${confession.from}</h6>
+                                            <p>${confession.content}</p>
+                                            <small>${confession.timestamp}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        listHtml += '</div>';
+                    } else {
+                        listHtml += '<p>暂无表白数据</p>';
+                    }
+                    
+                    document.getElementById('listResult').innerHTML = listHtml;
+                })
+                .catch(error => {
+                    document.getElementById('listResult').innerHTML = `
+                        <div class="alert alert-danger">
+                            <strong>表白列表获取失败！</strong><br>
+                            错误信息: ${error.message}
+                        </div>
+                    `;
+                });
+        });
+        
+        // 测试数据库
+        document.getElementById('testDbBtn').addEventListener('click', function() {
+            fetch('/api/admin/stats')
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else if (response.status === 401) {
+                        throw new Error('需要管理员权限（这是正常的）');
+                    } else {
+                        throw new Error('测试失败: ' + response.status);
+                    }
+                })
+                .then(data => {
+                    document.getElementById('dbResult').innerHTML = `
+                        <div class="alert alert-success">
+                            <strong>数据库连接成功！</strong><br>
+                            总表白: ${data.total_confessions}<br>
+                            爱情表白: ${data.love_count}<br>
+                            友情表白: ${data.friendship_count}<br>
+                            今日新增: ${data.today_confessions}<br>
+                            总点赞: ${data.total_likes}
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    document.getElementById('dbResult').innerHTML = `
+                        <div class="alert alert-warning">
+                            <strong>数据库测试结果:</strong><br>
+                            ${error.message}
+                        </div>
+                    `;
+                });
+        });
+    </script>
+</body>
+</html>

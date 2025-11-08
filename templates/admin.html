@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员后台 - 校园表白墙</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/static/css/admin.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="loginPage" class="admin-login">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow">
+                        <div class="card-body p-4">
+                            <h1 class="text-center mb-4 text-primary">
+                                <i class="bi bi-shield-lock-fill"></i> 后台登录
+                            </h1>
+                            <h5 class="text-center mb-4 text-muted">校园表白墙管理系统</h5>
+                            
+                            <form id="loginForm">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">用户名</label>
+                                    <input type="text" class="form-control" id="username" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">密码</label>
+                                    <input type="password" class="form-control" id="password" required>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-box-arrow-in-right"></i> 登录
+                                    </button>
+                                </div>
+                                
+                                <div id="errorMessage" class="alert alert-danger mt-3 d-none"></div>
+                            </form>
+                            
+                            <div class="text-center mt-4">
+                                <a href="/" class="text-primary">
+                                    <i class="bi bi-arrow-left"></i> 返回表白墙
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理后台页面 -->
+    <div id="dashboardPage" class="admin-dashboard d-none">
+        <!-- 顶部导航栏 -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <i class="bi bi-shield-fill-check"></i> 表白墙后台管理
+                </a>
+                <div class="navbar-nav ms-auto">
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> <span id="adminUsername">管理员</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/"><i class="bi bi-house"></i> 返回首页</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right"></i> 退出登录</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="row">
+                <!-- 侧边栏 -->
+                <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                    <div class="position-sticky pt-3">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#statsSection" data-section="stats">
+                                    <i class="bi bi-bar-chart-fill"></i> 统计信息
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#confessionsSection" data-section="confessions">
+                                    <i class="bi bi-envelope-heart-fill"></i> 表白管理
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#systemSection" data-section="system">
+                                    <i class="bi bi-gear-fill"></i> 系统信息
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+
+                <!-- 主内容区 -->
+                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                    <!-- 统计信息 -->
+                    <section id="statsSection" class="content-section">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">统计信息</h1>
+                        </div>
+
+                        <div class="row stats-grid">
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-primary shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">总表白数</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalConfessions">0</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="bi bi-envelope-heart-fill fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-success shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">爱情表白</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="loveCount">0</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="bi bi-heart-fill fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-info shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">友情表白</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="friendshipCount">0</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="bi bi-people-fill fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-warning shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">总点赞数</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalLikes">0</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="bi bi-hand-thumbs-up-fill fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">最近活动</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-area">
+                                            <p>今日新增表白: <span id="todayConfessions">0</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">媒体文件统计</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>总媒体文件: <span id="totalMedia">0</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 表白管理 -->
+                    <section id="confessionsSection" class="content-section d-none">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">表白管理</h1>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <div class="btn-group me-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="exportDataBtn">
+                                        <i class="bi bi-download"></i> 导出数据
+                                    </button>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-danger" id="clearDataBtn">
+                                    <i class="bi bi-trash"></i> 清空数据
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="searchInput" placeholder="搜索表白内容...">
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="typeFilter">
+                                    <option value="">所有类型</option>
+                                    <option value="love">爱情表白</option>
+                                    <option value="friendship">友情表白</option>
+                                    <option value="admiration">欣赏表白</option>
+                                    <option value="thanks">感谢表白</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-primary" id="searchBtn">
+                                    <i class="bi bi-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="confessionsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>致</th>
+                                        <th>来自</th>
+                                        <th>内容</th>
+                                        <th>类型</th>
+                                        <th>点赞数</th>
+                                        <th>时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="confessionsTableBody">
+                                    <tr>
+                                        <td colspan="8" class="text-center">加载中...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 分页 -->
+                        <nav aria-label="表白列表分页">
+                            <ul class="pagination justify-content-center" id="pagination">
+                                <!-- 分页按钮将通过JavaScript动态生成 -->
+                            </ul>
+                        </nav>
+                    </section>
+
+                    <!-- 系统信息 -->
+                    <section id="systemSection" class="content-section d-none">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">系统信息</h1>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">系统状态</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="systemStatus">
+                                            <p>当前时间: <span id="currentTime">-</span></p>
+                                            <p>数据库状态: <span class="badge bg-success">正常</span></p>
+                                            <p>服务器状态: <span class="badge bg-success">正常</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">浏览器信息</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>用户代理: <span id="userAgent">-</span></p>
+                                        <p>屏幕分辨率: <span id="screenResolution">-</span></p>
+                                        <p>语言: <span id="language">-</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认删除模态框 -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">确认删除</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>确定要删除这条表白吗？此操作不可恢复！</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast通知 -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+        <div id="toast" class="toast" role="alert">
+            <div class="toast-header">
+                <i class="bi bi-info-circle-fill text-primary me-2"></i>
+                <strong class="me-auto">通知</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                <!-- 通知内容将通过JavaScript动态填充 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>

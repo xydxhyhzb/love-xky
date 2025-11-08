@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园表白墙</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="text-center py-4">
+            <h1 class="display-4 text-primary">💕 校园表白墙 💕</h1>
+            <p class="lead">在这里，诉说你的心意</p>
+        </header>
+
+        <main>
+            <!-- 表白提交表单 -->
+            <section class="confession-form-section mb-5">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="h4 mb-0"><i class="bi bi-heart-fill"></i> 发表表白</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="confessionForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="to" class="form-label">致</label>
+                                    <input type="text" class="form-control" id="to" placeholder="你要表白的人的名字" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="from" class="form-label">来自</label>
+                                    <input type="text" class="form-control" id="from" placeholder="你的名字（可匿名）" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="type" class="form-label">表白类型</label>
+                                <select class="form-select" id="type">
+                                    <option value="love">💘 爱情表白</option>
+                                    <option value="friendship">🤝 友情表白</option>
+                                    <option value="admiration">🌟 欣赏表白</option>
+                                    <option value="thanks">🙏 感谢表白</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="content" class="form-label">表白内容</label>
+                                <textarea class="form-control" id="content" rows="4" placeholder="说出你的心里话..." required></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="media" class="form-label">上传图片或视频（可选）</label>
+                                <input type="file" class="form-control" id="media" accept="image/*, video/*" multiple>
+                                <div class="form-text">支持多文件上传，总大小不超过50MB</div>
+                                <div id="mediaPreview" class="mt-2"></div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-heart-fill"></i> 发表表白
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 搜索和筛选 -->
+            <section class="search-section mb-4">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="searchInput" placeholder="搜索表白内容...">
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="typeFilter">
+                                    <option value="">所有类型</option>
+                                    <option value="love">💘 爱情表白</option>
+                                    <option value="friendship">🤝 友情表白</option>
+                                    <option value="admiration">🌟 欣赏表白</option>
+                                    <option value="thanks">🙏 感谢表白</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-grid">
+                                <button class="btn btn-outline-primary" id="searchBtn">
+                                    <i class="bi bi-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 表白列表 -->
+            <section class="confessions-list">
+                <div id="confessionsContainer" class="row">
+                    <!-- 表白卡片将通过JavaScript动态添加 -->
+                </div>
+                
+                <!-- 加载更多按钮 -->
+                <div class="text-center mt-4">
+                    <button class="btn btn-outline-primary" id="loadMoreBtn">
+                        <i class="bi bi-arrow-down-circle"></i> 加载更多
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 查看表白详情模态框 -->
+    <div class="modal fade" id="confessionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">表白详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="confessionDetails">
+                        <!-- 详情内容将通过JavaScript动态填充 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast通知 -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+        <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="bi bi-info-circle-fill text-primary me-2"></i>
+                <strong class="me-auto">通知</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                <!-- 通知内容将通过JavaScript动态填充 -->
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-4 mt-5 border-top">
+        <p>&copy; 2023 校园表白墙 | <a href="/admin">管理员登录</a></p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
