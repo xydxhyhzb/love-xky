@@ -1,0 +1,125 @@
+/* 管理员后台样式 */
+
+/* 基础样式 */
+body {
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* 登录页面样式 */
+.admin-login {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+/* 管理后台样式 */
+.admin-dashboard {
+    min-height: 100vh;
+}
+
+/* 侧边栏样式 */
+.sidebar {
+    position: fixed;
+    top: 56px; /* 导航栏高度 */
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 20px 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-right: 1px solid #dee2e6;
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    color: #333;
+    border-radius: 0.25rem;
+    margin: 0.2rem 0.8rem;
+}
+
+.sidebar .nav-link:hover {
+    color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.sidebar .nav-link.active {
+    color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.sidebar .nav-link i {
+    margin-right: 8px;
+}
+
+/* 统计卡片样式 */
+.stats-grid .card {
+    border-left: 0.25rem solid !important;
+}
+
+.border-left-primary {
+    border-left-color: #4e73df !important;
+}
+
+.border-left-success {
+    border-left-color: #1cc88a !important;
+}
+
+.border-left-info {
+    border-left-color: #36b9cc !important;
+}
+
+.border-left-warning {
+    border-left-color: #f6c23e !important;
+}
+
+/* 表格样式 */
+.table td {
+    vertical-align: middle;
+}
+
+.content-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 徽章样式 */
+.type-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: white;
+}
+
+.type-love {
+    background-color: #e91e63;
+}
+
+.type-friendship {
+    background-color: #4caf50;
+}
+
+.type-admiration {
+    background-color: #ff9800;
+}
+
+.type-thanks {
+    background-color: #9c27b0;
+}
+
+/* 响应式调整 */
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: static;
+        height: auto;
+        padding-top: 0;
+    }
+    
+    main {
+        margin-top: 1rem;
+    }
+}

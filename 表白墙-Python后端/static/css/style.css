@@ -1,0 +1,158 @@
+/* 校园表白墙样式 */
+
+/* 基础样式 */
+body {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+header {
+    margin-bottom: 2rem;
+}
+
+/* 卡片样式 */
+.card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* 表白卡片样式 */
+.confession-card {
+    margin-bottom: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.confession-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.confession-header {
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+}
+
+.confession-type {
+    font-size: 0.9rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    color: white;
+    font-weight: bold;
+}
+
+.type-love {
+    background: linear-gradient(45deg, #e91e63, #f06292);
+}
+
+.type-friendship {
+    background: linear-gradient(45deg, #4caf50, #81c784);
+}
+
+.type-admiration {
+    background: linear-gradient(45deg, #ff9800, #ffb74d);
+}
+
+.type-thanks {
+    background: linear-gradient(45deg, #9c27b0, #ba68c8);
+}
+
+.confession-body {
+    padding: 1.5rem;
+}
+
+.confession-content {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.confession-footer {
+    padding: 1rem;
+    border-top: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.confession-timestamp {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.confession-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* 媒体预览样式 */
+.media-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.media-item {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.media-item:hover {
+    transform: scale(1.05);
+}
+
+.media-video {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+/* 按钮样式 */
+.btn-like {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    color: #e91e63;
+    transition: all 0.3s ease;
+}
+
+.btn-like:hover, .btn-like.liked {
+    background: #e91e63;
+    color: white;
+    transform: scale(1.1);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    .confession-card {
+        margin-bottom: 1rem;
+    }
+    
+    .media-item {
+        width: 80px;
+        height: 80px;
+    }
+}
