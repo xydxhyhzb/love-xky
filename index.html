@@ -676,6 +676,60 @@
                 
                 // 检查本地存储
                 this.debugLocalStorage();
+                
+                // 设置跨页面数据同步
+                this.setupCrossPageSync();
+            }
+            
+            // 设置跨页面数据同步
+            setupCrossPageSync() {
+                // 监听storage事件，当其他页面更新数据时同步
+                window.addEventListener('storage', (e) => {
+                    console.log('检测到storage变化:', e.key);
+                    
+                    // 如果是我们的数据键被更新
+                    if (e.key && (e.key.includes('confession') || e.key.includes('message'))) {
+                        console.log('检测到表白数据更新，重新加载数据...');
+                        
+                        // 重新加载数据
+                        this.confessions = this.loadConfessions();
+                        
+                        // 重新渲染
+                        this.renderWall();
+                        
+                        // 更新页面标题通知用户
+                        document.title = '(新消息)' + document.title.replace('(新消息)', '');
+                        
+                        // 3秒后移除通知
+                        setTimeout(() => {
+                            document.title = document.title.replace('(新消息)', '');
+                        }, 3000);
+                    }
+                });
+                
+                // 监听自定义事件
+                window.addEventListener('confessionDataUpdated', (e) => {
+                    console.log('接收到表白数据更新事件:', e.detail);
+                });
+                
+                // 设置定时检查，作为storage事件的补充
+                setInterval(() => {
+                    const lastUpdated = localStorage.getItem('confessions_last_updated');
+                    if (lastUpdated && (!this.lastUpdatedCheck || parseInt(lastUpdated) > this.lastUpdatedCheck)) {
+                        console.log('检测到数据更新，同步中...');
+                        this.lastUpdatedCheck = parseInt(lastUpdated);
+                        
+                        // 重新加载数据
+                        const oldCount = this.confessions.length;
+                        this.confessions = this.loadConfessions();
+                        
+                        // 如果数据有变化，重新渲染
+                        if (oldCount !== this.confessions.length) {
+                            console.log('数据同步完成，重新渲染');
+                            this.renderWall();
+                        }
+                    }
+                }, 3000); // 每3秒检查一次
             }
             
             // 调试本地存储
@@ -938,6 +992,9 @@
                 console.log('处理文件', files);
                 const MAX_SIZE = 50 * 1024 * 1024; // 50MB
 
+                // 清除之前的错误消息
+                this.clearErrorMessages();
+
                 for (let file of files) {
                     console.log('处理文件:', file.name, '类型:', file.type, '大小:', file.size);
                     
@@ -956,14 +1013,34 @@
                             console.log('文件添加成功:', file.name);
                         } else {
                             console.log('文件已存在:', file.name);
+                            this.showErrorMessage(`文件"${file.name}"已存在`);
                         }
                     } else {
-                        this.showErrorMessage(`不支持的文件类型: ${file.type}`);
+                        this.showErrorMessage(`不支持的文件类型: ${file.type} (${file.name})`);
                         continue;
                     }
                 }
                 
                 console.log('当前选中的文件数量:', this.selectedFiles.length);
+                
+                // 更新上传区域提示
+                this.updateUploadAreaText();
+            }
+            
+            // 清除错误消息
+            clearErrorMessages() {
+                const existingMessages = document.querySelectorAll('.error-message');
+                existingMessages.forEach(msg => msg.remove());
+            }
+            
+            // 更新上传区域提示
+            updateUploadAreaText() {
+                const uploadText = document.querySelector('.upload-text p');
+                if (uploadText && this.selectedFiles.length > 0) {
+                    uploadText.textContent = `已选择 ${this.selectedFiles.length} 个文件，可继续添加`;
+                } else if (uploadText) {
+                    uploadText.textContent = '点击或拖拽文件到此处上传';
+                }
             }
 
             // 添加文件预览
@@ -989,8 +1066,7 @@
                     // 为视频添加更好的样式和错误处理
                     previewItem.innerHTML = `
                         <div class="video-wrapper">
-                            <video class="preview-video" preload="metadata">
-                                <source src="${fileURL}" type="${file.type}">
+                            <video class="preview-video" preload="metadata" muted>
                                 您的浏览器不支持视频播放。
                             </video>
                             <div class="video-overlay">
@@ -1004,11 +1080,16 @@
                         <button class="remove-btn" data-file="${file.name}">×</button>
                     `;
                     
-                    // 添加视频加载事件处理
+                    // 获取视频元素和加载提示
                     const videoElement = previewItem.querySelector('video');
                     const loadingOverlay = previewItem.querySelector('.video-loading');
                     
-                    videoElement.addEventListener('loadedmetadata', () => {
+                    // 设置视频源
+                    videoElement.src = fileURL;
+                    
+                    // 添加视频加载事件处理
+                    videoElement.addEventListener('loadeddata', () => {
+                        console.log('视频数据加载成功:', file.name);
                         if (loadingOverlay) {
                             loadingOverlay.textContent = '✅';
                             setTimeout(() => {
@@ -1018,12 +1099,27 @@
                         }
                     });
                     
+                    videoElement.addEventListener('loadedmetadata', () => {
+                        console.log('视频元数据加载成功:', file.name);
+                        // 设置视频封面
+                        videoElement.currentTime = 1; // 设置到第1秒作为封面
+                    });
+                    
                     videoElement.addEventListener('error', (e) => {
-                        console.error('视频加载错误:', e);
+                        console.error('视频加载错误:', e, file.name);
                         if (loadingOverlay) {
                             loadingOverlay.textContent = '❌ 加载失败';
                         }
                         this.showErrorMessage(`视频"${file.name}"加载失败`);
+                    });
+                    
+                    // 添加点击播放/暂停功能
+                    videoElement.addEventListener('click', () => {
+                        if (videoElement.paused) {
+                            videoElement.play();
+                        } else {
+                            videoElement.pause();
+                        }
                     });
                 }
                 
@@ -1074,7 +1170,7 @@
 
                 // 创建表白对象
                 const confession = {
-                    id: Date.now(),
+                    id: Date.now() + Math.random(), // 确保ID唯一
                     to,
                     from,
                     content,
@@ -1084,22 +1180,55 @@
                     media: []
                 };
 
-                // 处理文件
+                // 处理文件 - 改进错误处理
                 if (this.selectedFiles.length > 0) {
-                    for (const file of this.selectedFiles) {
-                        const dataUrl = await this.fileToDataURL(file);
-                        confession.media.push({
-                            name: file.name,
-                            type: file.type,
-                            size: file.size,
-                            data: dataUrl
-                        });
+                    console.log('开始处理文件，数量:', this.selectedFiles.length);
+                    
+                    try {
+                        for (const file of this.selectedFiles) {
+                            console.log('处理文件:', file.name, '类型:', file.type);
+                            
+                            // 添加文件类型验证
+                            if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+                                console.warn('跳过不支持的文件类型:', file.type);
+                                continue;
+                            }
+                            
+                            try {
+                                const dataUrl = await this.fileToDataURL(file);
+                                confession.media.push({
+                                    name: file.name,
+                                    type: file.type,
+                                    size: file.size,
+                                    data: dataUrl
+                                });
+                                console.log('文件处理成功:', file.name);
+                            } catch (fileError) {
+                                console.error('文件处理失败:', file.name, fileError);
+                                alert(`文件"${file.name}"处理失败，请重试或选择其他文件`);
+                                return; // 停止提交
+                            }
+                        }
+                        
+                        console.log('所有文件处理完成，媒体文件数量:', confession.media.length);
+                    } catch (error) {
+                        console.error('文件处理过程中出错:', error);
+                        alert('文件处理过程中出错，请重试');
+                        return;
                     }
                 }
 
                 // 添加到表白列表
                 this.confessions.unshift(confession);
+                
+                // 立即保存数据
                 this.saveConfessions();
+                
+                // 添加调试日志
+                console.log('表白提交成功:', confession);
+                console.log('当前表白总数:', this.confessions.length);
+                
+                // 重新渲染表白墙
                 this.renderWall();
 
                 // 清空表单和预览
@@ -1109,6 +1238,15 @@
 
                 // 显示成功消息
                 this.showSuccessMessage();
+                
+                // 添加一条成功日志到控制台
+                console.log('表白发布成功，内容:', {
+                    to: confession.to,
+                    from: confession.from,
+                    type: confession.type,
+                    mediaCount: confession.media.length,
+                    timestamp: confession.timestamp
+                });
             }
 
             // 将文件转换为DataURL
@@ -1116,7 +1254,10 @@
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
+                    reader.onerror = () => {
+                        console.error('文件转换失败:', file.name);
+                        reject(new Error('文件转换失败'));
+                    };
                     reader.readAsDataURL(file);
                 });
             }
@@ -1368,21 +1509,28 @@
 
             // 保存表白到本地存储
             saveConfessions() {
-                // 同时保存到多个键，确保兼容性
+                // 同时保存到多个键，确保跨页面兼容性
                 const data = JSON.stringify(this.confessions);
                 localStorage.setItem('confessions', data);
                 localStorage.setItem('frontend_confessions', data);
                 localStorage.setItem('user_confessions', data);
+                localStorage.setItem('global_confessions', data); // 添加全局键
+                
+                // 触发自定义事件，通知其他页面数据更新
+                window.dispatchEvent(new CustomEvent('confessionDataUpdated', { detail: this.confessions }));
                 
                 // 添加调试日志
                 console.log(`保存了 ${this.confessions.length} 条表白到本地存储`);
+                
+                // 保存最后更新时间
+                localStorage.setItem('confessions_last_updated', Date.now().toString());
             }
 
             // 从本地存储加载表白
             loadConfessions() {
-                // 尝试从多个可能的键加载表白数据
+                // 尝试从多个可能的键加载表白数据，包括全局键
                 let savedConfessions = null;
-                const possibleKeys = ['confessions', 'frontend_confessions', 'user_confessions'];
+                const possibleKeys = ['global_confessions', 'confessions', 'frontend_confessions', 'user_confessions'];
                 
                 for (const key of possibleKeys) {
                     const data = localStorage.getItem(key);
